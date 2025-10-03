@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: background-removal-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - API_SECRET_KEY=${API_SECRET_KEY:-Lp8Z2ry4yqeHNIlU99TQwbfbuo9iH1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 512M
+    networks:
+      - api-network
+
+networks:
+  api-network:
+    driver: bridge
