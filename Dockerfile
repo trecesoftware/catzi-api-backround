@@ -23,6 +23,7 @@ WORKDIR /app
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
@@ -33,7 +34,12 @@ COPY --from=builder /root/.local /home/appuser/.local
 
 # Copy application code
 COPY main.py .
-RUN chown -R appuser:appuser /app /home/appuser/.local
+
+# Create directory for rembg models and download the model
+RUN mkdir -p /home/appuser/.u2net && \
+    curl -L https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx \
+    -o /home/appuser/.u2net/u2net.onnx && \
+    chown -R appuser:appuser /app /home/appuser/.local /home/appuser/.u2net
 
 # Make sure scripts in .local are usable
 ENV PATH=/home/appuser/.local/bin:$PATH
