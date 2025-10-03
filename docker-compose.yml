@@ -10,7 +10,7 @@ services:
     environment:
       - API_SECRET_KEY=${API_SECRET_KEY:-Lp8Z2ry4yqeHNIlU99TQwbfbuo9iH1}
     # Ejecuta como módulo:
-    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
 
     # Healthcheck: evita 'python -c import requests...' si no tienes requests instalado.
     # Usa curl (si lo instalaste en la imagen):

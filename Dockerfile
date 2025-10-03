@@ -25,17 +25,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python packages from builder
-COPY --from=builder /root/.local /root/.local
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser
+
+# Copy Python packages from builder to appuser home
+COPY --from=builder /root/.local /home/appuser/.local
 
 # Copy application code
 COPY main.py .
+RUN chown -R appuser:appuser /app /home/appuser/.local
 
 # Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
+ENV PATH=/home/appuser/.local/bin:$PATH
 
-# Create non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Expose port
@@ -46,5 +48,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # Run the application
-CMD ["python","-m","uvicorn","app.main:app","--host","0.0.0.0","--port","8000"]
+CMD ["python","-m","uvicorn","main:app","--host","0.0.0.0","--port","8000"]
 
